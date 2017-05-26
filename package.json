@@ -1,0 +1,25 @@
+{
+  "name": "fcc-url-shortener",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jereaa/fcc-url-shortener.git"
+  },
+  "author": "Jere Aagaard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jereaa/fcc-url-shortener/issues"
+  },
+  "homepage": "https://github.com/jereaa/fcc-url-shortener#readme",
+  "dependencies": {
+    "express": "^4.15.3",
+    "mongoose": "^4.10.2",
+    "mongoose-auto-increment": "^5.0.1",
+    "valid-url": "^1.0.9"
+  }
+}
