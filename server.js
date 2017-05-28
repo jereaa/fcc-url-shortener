@@ -11,7 +11,8 @@ app.use(cors());
 
 let port = process.env.PORT || 3000;
 
-let connection = mongoose.createConnection("mongodb://localhost/fcc-url-shortener");
+const mongoURL = process.env.MONGODB_URI || "mongodb://localhost/fcc-url-shortener";
+let connection = mongoose.createConnection(mongoURL);
 autoIncrement.initialize(connection);
 
 let shortLinkSchema = new mongoose.Schema({
@@ -19,7 +20,6 @@ let shortLinkSchema = new mongoose.Schema({
 	url: { type: String, required: true }
 });
 shortLinkSchema.plugin(autoIncrement.plugin, { model: "ShortUrl", field: "slug" });
-
 
 let nextSlugId = 0;
 
@@ -65,8 +65,6 @@ app.get("/api/v1/new/:url(*)", (req, res) => {
 			resultSlug = "a" + resultSlug;
 		}
 
-		console.log("URL saved as: " + JSON.stringify(newUrl));
-
 		res.status(200).json({
 			original_url: url,
 			short_url: req.protocol + "://www." + req.hostname + "/" + resultSlug
@@ -75,18 +73,20 @@ app.get("/api/v1/new/:url(*)", (req, res) => {
 });
 
 app.get("/:slug", (req, res) => {
-	let ShortUrl = mongoose.model("ShortUrl", shortLinkSchema);
-	console.log("Going to fetch the slug in the DB");
-
+	
+	if (req.params.slug.length > 7) {
+		res.send("Slug is too long... It should be 7 characters long");
+		return console.log("This is getting executed for some reason with slug: " + req.params.slug);
+	}
+	
+	let shortUrl = connection.model("ShortUrl", shortLinkSchema);
 	let slugInNum = Base62.toDecimal(req.params.slug);
-	console.log("Going to search for slug number: " + slugInNum);
 
-	ShortUrl.findOne({ "slug": slugInNum }, (err, shortUrl) => {
+	shortUrl.findOne({ "slug": slugInNum }, (err, shortUrl) => {
 		if (err) {
 			console.log("Error fetching URL: " + err);
 			return res.status(500).send("Server error :(");
 		}
-		console.log("Got Shortlink: " + shortUrl + " - Trying to redirect...");
 		return res.redirect(shortUrl.url);
 	});
 });
