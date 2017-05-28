@@ -1,10 +1,13 @@
-var express = require("express");
-var mongoose = require("mongoose");
-var autoIncrement = require("mongoose-auto-increment");
-var validUrl = require("valid-url");
-var Base62 = require("./base62");
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const autoIncrement = require("mongoose-auto-increment");
+const validUrl = require("valid-url");
+const Base62 = require("./base62");
 
-var app = express();
+const app = express();
+
+app.use(cors());
 
 let port = process.env.PORT || 3000;
 
@@ -20,7 +23,7 @@ shortLinkSchema.plugin(autoIncrement.plugin, { model: "ShortUrl", field: "slug" 
 
 let nextSlugId = 0;
 
-app.get("/api/v1/new/:url", (req, res) => {
+app.get("/api/v1/new/:url(*)", (req, res) => {
 
 	let url = req.params.url;
 
@@ -55,12 +58,37 @@ app.get("/api/v1/new/:url", (req, res) => {
 			console.log("There was an error saving the new URL: " + err);
 			return;
 		}
+
+		let resultSlug = Base62.toBase62(newUrl.slug);
+
+		while (resultSlug.length < 7) {
+			resultSlug = "a" + resultSlug;
+		}
+
+		console.log("URL saved as: " + JSON.stringify(newUrl));
+
 		res.status(200).json({
 			original_url: url,
-			short_url: req.protocol + "://www." + req.host + "/" + Base62.toBase62(newUrl.slug)
+			short_url: req.protocol + "://www." + req.hostname + "/" + resultSlug
 		});
 	});
-	
+});
+
+app.get("/:slug", (req, res) => {
+	let ShortUrl = mongoose.model("ShortUrl", shortLinkSchema);
+	console.log("Going to fetch the slug in the DB");
+
+	let slugInNum = Base62.toDecimal(req.params.slug);
+	console.log("Going to search for slug number: " + slugInNum);
+
+	ShortUrl.findOne({ "slug": slugInNum }, (err, shortUrl) => {
+		if (err) {
+			console.log("Error fetching URL: " + err);
+			return res.status(500).send("Server error :(");
+		}
+		console.log("Got Shortlink: " + shortUrl + " - Trying to redirect...");
+		return res.redirect(shortUrl.url);
+	});
 });
 
 app.listen(port, () => {

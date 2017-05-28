@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/jereaa/fcc-url-shortener#readme",
   "dependencies": {
+    "cors": "^2.8.3",
     "express": "^4.15.3",
     "mongoose": "^4.10.2",
     "mongoose-auto-increment": "^5.0.1",
