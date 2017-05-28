@@ -23,6 +23,10 @@ shortLinkSchema.plugin(autoIncrement.plugin, { model: "ShortUrl", field: "slug" 
 
 let nextSlugId = 0;
 
+app.get("/", (req, res) => {
+	res.send("<h1>To use API:</h1><p>Create new shortUrl: " + req.hostname + "/api/v1/new/{your url}</p><p>Visit shortUrl: " + req.hostname + "/{Your shortUrl}</p>");
+});
+
 app.get("/api/v1/new/:url(*)", (req, res) => {
 
 	let url = req.params.url;
